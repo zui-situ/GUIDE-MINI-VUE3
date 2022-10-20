@@ -73,7 +73,8 @@ it('stop', ()=>{
   expect(dummy).toBe(2)
 
   stop(runner);
-  obj.prop = 3;
+  // obj.prop = 3; 
+  obj.prop++;
   expect(dummy).toBe(2)
 
   runner();
@@ -83,22 +84,22 @@ it('stop', ()=>{
 })
 
 
-it("onShop", () =>{
+it("onStop", () =>{
   const obj = reactive({
     foo: 1
   })
-  const onShop = jest.fn();
+  const onStop = jest.fn();
   let dummy;
   const runner = effect(
     () => {
       dummy = obj.foo
     },
     {
-      onShop
+      onStop
     }
   )
 
   stop(runner)
 
-  expect(onShop).toBeCalledTimes(1)
+  expect(onStop).toBeCalledTimes(1)
 })

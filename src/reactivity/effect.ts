@@ -1,25 +1,39 @@
-import { extend } from "./shared";
+import { extend } from "../shared";
 
-class ReactiveEffect {
+
+let activeEffect; 
+let shouldTrack;
+export class ReactiveEffect {
   private _fn: any;
   deps = [];
   active = true;
-  onShop?: () => void
+  onStop?: () => void
   public scheduler: Function | undefined;
   constructor(fn, scheduler?:Function) {
     this._fn = fn
     this.scheduler = scheduler
   }
   run() {
-    activeEffect = this;
+    
     // this._fn()
-    return this._fn()
+    // 1.会收集依赖
+    // shouldTrack 来做区分
+    if(!this.active) { 
+      return this._fn()
+    }
+    shouldTrack = true
+    activeEffect = this;
+
+    const result = this._fn()
+    // reset
+    shouldTrack = false
+    return result
   }
   stop() {
     if(this.active) {
       cleanupEffect(this)
-      if(this.onShop) {
-        this.onShop()
+      if(this.onStop) {
+        this.onStop()
       }
       this.active = false
     }
@@ -30,12 +44,15 @@ function cleanupEffect(effect) {
   effect.deps.forEach((dep: any)=>{
     dep.delete(effect)
   })
+  effect.deps.length = 0;
 }
 
 
 const targetMap = new Map();
 
 export function track(target,key) {
+  if(!isTracking()) return
+
   // target -> key -> dep
   let depsMap = targetMap.get(target);
 
@@ -50,12 +67,19 @@ export function track(target,key) {
     dep = new Set()
     depsMap.set(key, dep)
   }
+  trackEffects(dep)
+}
 
-  if(!activeEffect) return
+export function trackEffects(dep) {
+  if(dep.has(activeEffect)) return;
+  
   dep.add(activeEffect)
-
   activeEffect.deps.push(dep)
+}
 
+
+export function isTracking() {
+  return shouldTrack && activeEffect !== undefined
 }
 
 export function trigger(target,key) {
@@ -70,7 +94,15 @@ export function trigger(target,key) {
   }
 }
 
-let activeEffect;
+export function triggerEffects(dep) {
+  for(let effect of dep) {
+    if(effect.scheduler) {
+      effect.scheduler()
+    } else {
+      effect.run()
+    }
+  }
+}
 
 export function effect(fn, options:any = {}) { 
   // fn

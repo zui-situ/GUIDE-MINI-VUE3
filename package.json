@@ -19,5 +19,13 @@
     "@babel/preset-env": "^7.18.6",
     "@babel/preset-typescript": "^7.18.6",
     "babel-jest": "^28.1.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zui-situ/GUIDE-MINI-VUE3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zui-situ/GUIDE-MINI-VUE3/issues"
+  },
+  "homepage": "https://github.com/zui-situ/GUIDE-MINI-VUE3#readme"
 }
